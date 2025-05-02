@@ -15,7 +15,7 @@ router.post('/login', (req, res) => {
             req.session.voter = user_id;
             res.redirect('/voter_dashboard.html');
         } else {
-            res.send('Invalid credentials');
+            res.status(401).send('Invalid User ID or Password');
         }
     });
 });
