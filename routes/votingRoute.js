@@ -25,10 +25,12 @@ router.post('/login', (req, res) => {
   router.post('/register', (req, res) => {
     const { name, government_id, password } = req.body;
   
-    db.query('SELECT COUNT(*) AS count FROM users', (err, result) => {
-      if (err) {
-        console.error('User ID count error:', err);
-        return res.status(500).send('Error generating user ID');
+    // Step 1: Check if Aadhaar (govt ID) already exists
+
+    db.query('SELECT * FROM users WHERE government_id = ?', [government_id], (err, result) => {
+        if (err) {
+        console.error('Check Error:', err);
+        return res.status(500).send('Server error');
       }
   
       const index = result[0].count + 1;
