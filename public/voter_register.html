@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Registration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to top, #f7f8da, #fafa55, #f7f8da);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .form-container {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 350px;
+    }
+    .form-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .submit-btn {
+      width: 100%;
+      background-color: #28a745;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .submit-btn:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+
+<div class="form-container">
+  <h2>Register as Voter</h2>
+  <form id="registrationForm" action="/voter/register" method="post">
+    <div class="form-group">
+      <label for="name">Full Name:</label>
+      <input type="text" id="name" required>
+    </div>
+
+    <div class="form-group">
+      <label for="phone">Phone Number:</label>
+      <input type="tel" id="phone" pattern="[0-9]{10}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="aadhaar">Aadhaar Number:</label>
+      <input type="text" id="aadhaar" pattern="[0-9]{12}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password:</label>
+      <input type="password" id="password" required>
+    </div>
+
+    <div class="form-group">
+      <label for="confirmPassword">Confirm Password:</label>
+      <input type="password" id="confirmPassword" required>
+    </div>
+    <div class="form-group">
+      <input type="checkbox" onclick="togglePasswords()"> Show Passwords
+    </div>    
+
+    <!-- hidden field to set the role -->
+    <input type="hidden" id="role" value="VOTER">
+
+    <button type="submit" class="submit-btn">Register</button>
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById('registrationForm');
+  
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+  
+    const name = document.getElementById('name').value;
+    const phone = document.getElementById('phone').value; // This will be used as user_id if you want
+    const aadhaar = document.getElementById('aadhaar').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+  
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+  
+    const data = {
+      name: name,
+      user_id: phone, 
+      government_id: aadhaar,
+      password: password
+    };
+  
+    fetch('http://localhost:3000/voter/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+      .then(async res => {
+        const text = await res.text();
+        try {
+          const json = JSON.parse(text);
+          if (res.ok) {
+            alert('✅ Registered! Your User ID: ' + json.user_id);
+            form.reset();
+          } else {
+            alert('❌ Error: ' + (json.message || 'Unknown error'));
+          }
+        } catch (err) {
+          console.error('💥 Not JSON:', text);
+          alert('❌ Unexpected server response');
+        }
+      })
+      .catch(err => {
+        console.error('🔥 Network error:', err);
+        alert('❌ Network error. Check server.');
+      });
+  });
+  
+  function togglePasswords() {
+    const pass = document.getElementById("password");
+    const confirmPass = document.getElementById("confirmPassword");
+
+    const type = pass.type === "password" ? "text" : "password";
+    pass.type = type;
+    confirmPass.type = type;
+  }
+</script>
+
+
+</body>
+</html>

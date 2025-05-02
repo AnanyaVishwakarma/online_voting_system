@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff3e0;
+      padding: 40px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #ef6c00;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label, input {
+      display: block;
+      width: 100%;
+    }
+    input {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .submit-btn {
+      background: #ef6c00;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .submit-btn:hover {
+      background: #bf360c;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Welcome, Admin!</h2>
+    <form onsubmit="createPoll(event)">
+      <div class="form-group">
+        <label for="question">Poll Question:</label>
+        <input type="text" id="question" required>
+      </div>
+      <div class="form-group">
+        <label for="options">Options (comma-separated):</label>
+        <input type="text" id="options" required>
+      </div>
+      <button class="submit-btn" type="submit">Create Poll</button>
+    </form>
+  </div>
+
+  <script>
+    // Fetch poll data
+     fetch("http://127.0.0.1:5000/get_poll")
+      .then(res => res.json())
+      .then(data => {
+        document.querySelector('h3').textContent = data.question;
+  
+        const pollDiv = document.querySelector(".poll");
+        pollDiv.innerHTML = `<h3>${data.question}</h3>`;
+        data.options.forEach(option => {
+          pollDiv.innerHTML += `
+            <label><input type="radio" name="candidate" value="${option}"> ${option}</label>
+          `;
+        });
+        pollDiv.innerHTML += `<button class="submit-btn" onclick="submitVote()">Submit Vote</button>`;
+      });
+  
+    function submitVote() {
+      const selected = document.querySelector('input[name="candidate"]:checked');
+      if (!selected) {
+        alert("Please select a candidate!");
+        return;
+      }
+  
+      fetch("http://127.0.0.1:5000/submit_vote", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ choice: selected.value })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert("✅ " + data.message);
+      });
+    }
+  </script>
+  
+</body>
+</html>

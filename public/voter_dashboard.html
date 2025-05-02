@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Voter Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e3f2fd;
+      padding: 40px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #1976d2;
+    }
+    .poll {
+      margin-top: 20px;
+    }
+    .poll label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    .submit-btn {
+      background: #1976d2;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .submit-btn:hover {
+      background: #0d47a1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Welcome, Voter!</h2>
+    <div class="poll">
+      <h3>Who should be the next leader?</h3>
+      <label><input type="radio" name="candidate" value="Alice"> Alice</label>
+      <label><input type="radio" name="candidate" value="Bob"> Bob</label>
+      <label><input type="radio" name="candidate" value="Charlie"> Charlie</label>
+      <button class="submit-btn" onclick="submitVote()">Submit Vote</button>
+    </div>
+  </div>
+
+  <script>
+    function submitVote() {
+      const selected = document.querySelector('input[name="candidate"]:checked');
+      if (!selected) {
+        alert("Please select a candidate!");
+        return;
+      }
+
+      // Send vote to backend (dummy fetch here)
+      alert(`🎉 You voted for ${selected.value}!`);
+    }
+  </script>
+</body>
+</html>
