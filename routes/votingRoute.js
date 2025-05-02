@@ -22,10 +22,6 @@ router.post('/login', (req, res) => {
 
 
 // Voter Register
-function generateUserId(index) {
-    return `U${String(index).padStart(3, '0')}`;
-  }
-  
   router.post('/register', (req, res) => {
     const { name, government_id, password } = req.body;
   
