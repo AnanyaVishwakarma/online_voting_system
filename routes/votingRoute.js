@@ -20,33 +20,55 @@ router.post('/login', (req, res) => {
     });
 });
 
+//Voter Register
+router.post("/register", (req, res) => {
+  const { name, government_id, password, phone } = req.body;
 
-// Voter Register
-  router.post('/register', (req, res) => {
-    const { name, government_id, password } = req.body;
-  
-    // Step 1: Check if Aadhaar (govt ID) already exists
-
-    db.query('SELECT * FROM users WHERE government_id = ?', [government_id], (err, result) => {
-        if (err) {
-        console.error('Check Error:', err);
-        return res.status(500).send('Server error');
+  // Step 1: Check if Aadhaar (govt ID) already exists
+  db.query(
+    "SELECT * FROM users WHERE government_id = ?",
+    [government_id],
+    (err, result) => {
+      if (err) {
+        console.error("Check Error:", err);
+        return res.status(500).json("Server error");
       }
-  
-      const index = result[0].count + 1;
-      const user_id = generateUserId(index);
-  
-      const insertQuery = 'INSERT INTO users (user_id, name, government_id, password) VALUES (?, ?, ?, ?)';
-      db.query(insertQuery, [user_id, name, government_id, password], (err2) => {
+
+      if (result.length > 0) {
+        return res.status(400).json({ message: "You are already registered." });
+      }
+
+      // Step 2: Generate unique user_id
+      db.query("SELECT COUNT(*) AS count FROM users", (err2, result2) => {
         if (err2) {
-          console.error('Insert error:', err2);
-          return res.status(500).send('Registration failed');
+          console.error("Insert error:", err2);
+          return res
+            .status(500)
+            .json({ message: "Registration failed", error: err2.message });
         }
-  
-        res.json({ message: 'Registered successfully', userId: user_id });
+
+        const index = result2[0].count + 1;
+        const user_id = `U${String(index).padStart(3, "0")}`;
+
+        // Step 3: Insert new user
+        console.log("Form Data Received:", req.body);
+        const insertQuery = "INSERT INTO users (user_id, name, government_id, password, phone) VALUES (?, ?, ?, ?, ?)";
+        db.query(insertQuery, [user_id, name, government_id, password, phone], (err3) => {
+            if (err3) {
+              console.error("Insert error:", err3);
+              return res.status(500).json({ message: "Registration failed" });
+            }
+
+            return res.status(200).json({
+              message: "Registered successfully!",
+              userId: user_id,
+            });
+        });
+
       });
-    });
-  });
+    }
+  );
+});
 
 router.post('/vote', async (req, res) => {
   if (!req.session.voter) {
