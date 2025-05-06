@@ -6,6 +6,7 @@ const router = express.Router();
 
 // Admin Register
 router.post('/register', (req, res) => {
+      console.log("Admin register route hit!");
     const { username, password } = req.body;
     const admin_id = 'ADM' + crypto.randomBytes(3).toString('hex'); 
 
