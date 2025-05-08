@@ -6,8 +6,6 @@ const router = express.Router();
 
 // Admin Register
 router.post('/register', (req, res) => {
-      console.log("Admin register route hit!");
-      console.log("Request body", req.body);
     const { name, government_id, phone, password } = req.body;
 
     // Step 1: Check if Aadhaar (government_id) already exists
