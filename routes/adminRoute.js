@@ -45,7 +45,6 @@ router.post('/register', (req, res) => {
 // Admin Login
 router.post('/login', (req, res) => {
     const { admin_id, password } = req.body;
-
     db.query('SELECT * FROM admins WHERE admin_id = ? AND password = ?', [admin_id, password], (err, results) => {
         if (err) {
             console.error('Login Error:', err);
