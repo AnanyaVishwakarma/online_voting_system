@@ -1,28 +1,10 @@
-import express from 'express';
-import db from '../db/connections.js';
+import express from "express";
+import db from "../db/connections.js";
 
 const router = express.Router();
 
-// Voter Login
-router.post('/login', (req, res) => {
-    const { user_id, password } = req.body;
-
-    const query = 'SELECT * FROM users WHERE user_id = ? AND password = ?';
-    db.query(query, [user_id, password], (err, results) => {
-        if (err) return res.status(500).send('Server error');
-
-        if (results.length > 0) {
-            req.session.voter = user_id;
-            res.redirect('/voter_dashboard.html');
-        } else {
-            res.status(401).send('Invalid User ID or Password');
-        }
-    });
-});
-
-//Voter Register
 router.post("/register", (req, res) => {
-  const { name, government_id, password, phone } = req.body;
+  const { name, phone, government_id, password } = req.body;
 
   // Step 1: Check if Aadhaar (govt ID) already exists
   db.query(
@@ -52,8 +34,8 @@ router.post("/register", (req, res) => {
 
         // Step 3: Insert new user
         console.log("Form Data Received:", req.body);
-        const insertQuery = "INSERT INTO users (user_id, name, government_id, password, phone) VALUES (?, ?, ?, ?, ?)";
-        db.query(insertQuery, [user_id, name, government_id, password, phone], (err3) => {
+        const insertQuery = "INSERT INTO users (name, phone, government_id, password) VALUES (?, ?, ?, ?, ?)";
+        db.query(insertQuery, [name, phone, government_id, password], (err3) => {
             if (err3) {
               console.error("Insert error:", err3);
               return res.status(500).json({ message: "Registration failed" });
@@ -68,6 +50,28 @@ router.post("/register", (req, res) => {
       });
     }
   );
+});
+
+// Voter Login
+router.post('/login', async (req, res) => {
+  const { user_id, password } = req.body;
+
+  try {
+    const [rows] = await db.query(
+      'SELECT * FROM users WHERE user_id = ? AND password = ?',
+      [user_id, password]
+    );
+
+    if (rows.length > 0) {
+      req.session.voter = rows[0]; // Save to session
+      return res.json({ message: "Login successful!", userId: rows[0].user_id });
+    } else {
+      return res.status(401).json({ message: "Invalid User ID or Password" });
+    }
+  } catch (err) {
+    console.error("Login Error:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 });
 
 router.post('/vote', async (req, res) => {
@@ -95,5 +99,5 @@ router.post('/vote', async (req, res) => {
   }
 });
 
-  
+
 export default router;
