@@ -71,44 +71,34 @@
 </div>
 
 <script>
-  const form = document.getElementById('loginForm');
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
+const loginForm = document.getElementById('loginForm');
+loginForm.addEventListener('submit', function (e) {
+  e.preventDefault();
 
-    const data = {
-      userId: document.getElementById('userId').value,
-      password: document.getElementById('password').value
-    };
+  const user_id = document.getElementById('user_id').value;
+  const password = document.getElementById('password').value;
 
-    fetch('http://localhost:3000/voter/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
-      .then(res => res.json())
-      .then(response => {
-
-
-        
-        if (response.user) {
-  alert(`✅ Login successful! Welcome ${response.user.role}: ${response.user.name}`);
-  
-  if (response.user.role === 'ADMIN') {
-    window.location.href = "admin-dashboard.html";
-  } else {
-    window.location.href = "voter-dashboard.html";
-  }
-}
- else {
-          alert('❌ ' + response.message);
+  fetch('http://localhost:3000/voter/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id, password }),
+  })
+    .then(async res => {
+      const text = await res.text();
+      try {
+        const json = JSON.parse(text);
+        if (res.ok) {
+          alert('✅ Login successful! Welcome, ' + json.userId);
+          window.location.href = '/voter/dashboard';
+        } else {
+          alert('❌ ' + json.message);
         }
-      })
-      .catch(err => {
-        alert('❌ Something went wrong.');
-        console.error(err);
-      });
-  });
+      } catch (err) {
+        console.error('Error parsing:', text);
+        alert('⚠️ Unexpected response: ' + text);
+      }
+    });
+});
 </script>
-
 </body>
 </html>
