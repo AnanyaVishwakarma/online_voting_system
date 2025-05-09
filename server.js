@@ -25,12 +25,13 @@ app.use(session({
     saveUninitialized: false,
 }));
 app.get('/admin/dashboard', (req, res) => {
-    if (req.session.admin) {
-      res.sendFile(path.join(__dirname, 'public', 'admin_dashboard.html'));
-    } else {
-      res.redirect('/admin_login.html');
-    }
-  });
+  if (req.session.admin) {
+    res.sendFile(path.join(__dirname, 'public', 'admin_dashboard.html'));
+  } else {
+    res.redirect('/admin_login.html');
+  }
+});
+
   
 app.get('/voter/dashboard', (req, res) => {
     if (req.session.voter) {
@@ -52,5 +53,7 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Server is running on http://localhost:${PORT}`);
 });
+
+
 
 
