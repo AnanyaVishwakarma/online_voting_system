@@ -55,41 +55,42 @@
 
 <div class="form-container">
   <h2>Register as Voter</h2>
-  <form id="registrationForm" action="/voter/register" method="post">
+  <form id="voterRegistrationForm" method="post">
     <div class="form-group">
       <label for="name">Full Name:</label>
-      <input type="text" id="name" required>
+      <input type="text" id="name" name="name" required>
     </div>
 
     <div class="form-group">
       <label for="phone">Phone Number:</label>
-      <input type="tel" id="phone" pattern="[0-9]{10}" required>
+      <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" required>
     </div>
 
     <div class="form-group">
       <label for="aadhaar">Aadhaar Number:</label>
-      <input type="text" id="aadhaar" pattern="[0-9]{12}" required>
+      <input type="text" id="government_id" name="government_id" pattern="[0-9]{12}" required>
     </div>
 
     <div class="form-group">
       <label for="password">Password:</label>
-      <input type="password" id="password" required>
+      <input type="password" id="password" name="password" required>
     </div>
 
     <div class="form-group">
       <label for="confirmPassword">Confirm Password:</label>
-      <input type="password" id="confirmPassword" required>
+      <input type="password" id="confirmPassword" name="confirmPassword" required>
     </div>
     <div class="form-group">
       <input type="checkbox" onclick="togglePasswords()"> Show Passwords
     </div>    
 
     <!-- hidden field to set the role -->
-    <input type="hidden" id="role" value="VOTER">
+    <input type="hidden" id="role" name="role" value="VOTER">
 
     <button type="submit" class="submit-btn">Register</button>
   </form>
 </div>
+
 
 <script>
   const form = document.getElementById('voterRegistrationForm');
@@ -99,9 +100,10 @@
   
     const name = document.getElementById('name').value;
     const phone = document.getElementById('phone').value; 
-    const aadhaar = document.getElementById('aadhaar').value;
+    const aadhaar = document.getElementById('government_id').value;
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
+    const role = document.getElementById('role').value;
   
     if (password !== confirmPassword) {
       alert("Passwords do not match.");
@@ -112,6 +114,7 @@
       phone: phone,
       government_id: aadhaar,
       password: password,
+      role: role,
     };
     fetch('http://localhost:3000/voter/register', {
       method: 'POST',
