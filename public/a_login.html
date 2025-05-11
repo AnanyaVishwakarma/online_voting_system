@@ -55,50 +55,48 @@
 
 <div class="form-container">
   <h2>Login</h2>
-  <form id="loginForm" action="/admin/login" method="post">
+  <form id="adminLoginForm" method="post">
     <div class="form-group">
-      <label for="userId">User ID:</label>
-      <input type="text" id="admin_id" placeholder="Admin ID" required>  
+      <label for="admin_id">User ID:</label>
+      <input type="text" id="admin_id" name="admin_id" placeholder="Admin ID" required>
     </div>
 
     <div class="form-group">
       <label for="password">Password:</label>
-      <input type="password" id="password" placeholder="Password" required>
+      <input type="password" id="password" name="password" placeholder="Password" required>
     </div>
 
     <button type="submit" class="submit-btn">Login</button>
   </form>
+  <p id="loadingText" style="display: none; color: green;">🔄 Logging in, please wait...</p>
 </div>
 
 <script>
-  const form = document.getElementById('loginForm');
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
+document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const admin_id = document.getElementById('admin_id').value;
+  const password = document.getElementById('password').value;
+  loadingText.style.display = 'block';
 
-    const data = {
-  user_id: document.getElementById('userId').value,
-  password: document.getElementById('password').value
-};
-
-fetch('http://localhost:3000/voter/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
-      .then(res => res.json())
-      .then(response => {
-        if (response.user) {
-          alert(`✅ Login successful! Welcome ${response.user.role}: ${response.user.name}`);
-          } else {
-          alert('❌ ' + response.message);
-        }
-      })
-      .catch(err => {
-        alert('❌ Something went wrong.');
-        console.error(err);
-      });
+  fetch('http://localhost:3000/admin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ admin_id, password })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.redirectTo) {
+      alert("✅ Login successful!");
+      window.location.href = data.redirectTo;
+    } else {
+      alert("❌ " + (data.message || "Login failed"));
+    }
+  })
+  .catch(err => {
+    console.error("💥 Error:", err);
+    alert("❌ Login error occurred.");
   });
-</script>
-
+});
+  </script>
 </body>
 </html>
