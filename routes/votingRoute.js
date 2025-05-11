@@ -4,7 +4,7 @@ import db from "../db/connections.js";
 const router = express.Router();
 
 router.post("/register", (req, res) => {
-  const { name, phone, government_id, password } = req.body;
+  const {name, phone, government_id, password } = req.body;
 
   // Step 1: Check if Aadhaar (govt ID) already exists
   db.query(
@@ -34,18 +34,18 @@ router.post("/register", (req, res) => {
 
         // Step 3: Insert new user
         console.log("Form Data Received:", req.body);
-        const insertQuery = "INSERT INTO users (name, phone, government_id, password) VALUES (?, ?, ?, ?, ?)";
-        db.query(insertQuery, [name, phone, government_id, password], (err3) => {
-            if (err3) {
-              console.error("Insert error:", err3);
-              return res.status(500).json({ message: "Registration failed" });
-            }
+const insertQuery = "INSERT INTO users (name, phone, government_id, password, user_id) VALUES (?, ?, ?, ?, ?)";
+db.query(insertQuery, [name, phone, government_id, password, user_id], (err3) => {
+  if (err3) {
+    console.error("Insert error:", err3);
+    return res.status(500).json({ message: "Registration failed" });
+  }
 
-            return res.status(200).json({
-              message: "Registered successfully!",
-              userId: user_id,
-            });
-        });
+  return res.status(200).json({
+    message: "Registered successfully!",
+    userId: user_id,
+  });
+});
 
       });
     }
@@ -101,3 +101,4 @@ router.post('/vote', async (req, res) => {
 
 
 export default router;
+
