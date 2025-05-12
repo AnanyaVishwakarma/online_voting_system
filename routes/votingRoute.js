@@ -1,55 +1,41 @@
 import express from "express";
-import db from "../db/connections.js";
+import db from '../db/connections.js';
 
 const router = express.Router();
 
-router.post("/register", (req, res) => {
-  const {name, phone, government_id, password } = req.body;
+router.post("/register", async (req, res) => {
+  const { name, phone, government_id, password } = req.body;
 
-  // Step 1: Check if Aadhaar (govt ID) already exists
-  db.query(
-    "SELECT * FROM users WHERE government_id = ?",
-    [government_id],
-    (err, result) => {
-      if (err) {
-        console.error("Check Error:", err);
-        return res.status(500).json("Server error");
-      }
+  try {
+    // Step 1: Check if Aadhaar (govt ID) already exists
+    const [existing] = await db.query("SELECT * FROM users WHERE government_id = ?", [government_id]);
 
-      if (result.length > 0) {
-        return res.status(400).json({ message: "You are already registered." });
-      }
-
-      // Step 2: Generate unique user_id
-      db.query("SELECT COUNT(*) AS count FROM users", (err2, result2) => {
-        if (err2) {
-          console.error("Insert error:", err2);
-          return res
-            .status(500)
-            .json({ message: "Registration failed", error: err2.message });
-        }
-
-        const index = result2[0].count + 1;
-        const user_id = `U${String(index).padStart(3, "0")}`;
-
-        // Step 3: Insert new user
-        console.log("Form Data Received:", req.body);
-const insertQuery = "INSERT INTO users (name, phone, government_id, password, user_id) VALUES (?, ?, ?, ?, ?)";
-db.query(insertQuery, [name, phone, government_id, password, user_id], (err3) => {
-  if (err3) {
-    console.error("Insert error:", err3);
-    return res.status(500).json({ message: "Registration failed" });
-  }
-
-  return res.status(200).json({
-    message: "Registered successfully!",
-    userId: user_id,
-  });
-});
-
-      });
+    if (existing.length > 0) {
+      return res.status(400).json({ message: "You are already registered." });
     }
-  );
+
+    // Step 2: Generate unique user_id
+    const [countResult] = await db.query("SELECT COUNT(*) AS count FROM users");
+    const index = countResult[0].count + 1;
+    const user_id = `U${String(index).padStart(3, "0")}`;
+
+    // Step 3: Insert new user
+    console.log("Form Data Received:", req.body);
+    const insertQuery = "INSERT INTO users (name, phone, government_id, password, user_id) VALUES (?, ?, ?, ?, ?)";
+    await db.query(insertQuery, [name, phone, government_id, password, user_id]);
+
+    return res.status(200).json({
+      message: "Registered successfully!",
+      userId: user_id,
+    });
+
+  } catch (err) {
+    console.error("Registration Error:", err);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: err.message,
+    });
+  }
 });
 
 // Voter Login
@@ -101,4 +87,3 @@ router.post('/vote', async (req, res) => {
 
 
 export default router;
-
