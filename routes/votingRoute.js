@@ -68,22 +68,27 @@ router.post('/vote', async (req, res) => {
   const voterId = req.session.voter.user_id;
   const { partyId } = req.body;
 
+  if (!partyId) {
+    return res.status(400).json({ message: "Party ID is missing" });
+  }
+
   try {
-    // Prevent multiple votes
     const [check] = await db.query('SELECT has_voted FROM users WHERE user_id = ?', [voterId]);
+    if (!check.length) {
+      return res.status(400).json({ message: "Voter not found" });
+    }
     if (check[0].has_voted) {
       return res.status(400).json({ message: "You have already voted!" });
     }
 
     await db.query('INSERT INTO votes (voter_id, party_id) VALUES (?, ?)', [voterId, partyId]);
     await db.query('UPDATE users SET has_voted = 1 WHERE user_id = ?', [voterId]);
+    await db.query('UPDATE parties SET vote_count = vote_count + 1 WHERE id = ?', [partyId]);
 
     res.status(200).json({ message: "Vote casted successfully" });
   } catch (err) {
-    console.error(err);
+    console.error("Vote error:", err);
     res.status(500).json({ message: "Server error while voting." });
   }
 });
-
-
 export default router;
