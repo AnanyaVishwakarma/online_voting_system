@@ -1,102 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Login Page</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to top, #f7f8da, #fafa55, #f7f8da);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .form-container {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      width: 350px;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    .submit-btn {
-      width: 100%;
-      background-color: #007bff;
-      color: white;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .submit-btn:hover {
-      background-color: #0056b3;
-    }
-  </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login Page</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(to top, #f7f8da, #fafa55, #f7f8da);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .form-container {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        width: 350px;
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+      }
+      .submit-btn {
+        width: 100%;
+        background-color: #007bff;
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .submit-btn:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form-container">
+      <h2>Login</h2>
+      <form id="adminLoginForm">
+        <div class="form-group">
+          <label for="admin_id">Admin ID:</label>
+          <input type="text" name="admin_id" placeholder="Admin ID" required />
+        </div>
+        <div class="form-group">
+          <label for="phone">Mobile Number:</label>
+          <input type="text" name="phone" placeholder="Phone Number" required />
+        </div>
+        <div id="otpSection" style="display: none">
+          <input type="text" name="otp" placeholder="Enter OTP" />
+        </div>
 
-<div class="form-container">
-  <h2>Login</h2>
-  <form id="adminLoginForm" method="post">
-    <div class="form-group">
-      <label for="admin_id">User ID:</label>
-      <input type="text" id="admin_id" name="admin_id" placeholder="Admin ID" required>
+        <input type="hidden" id="role" name="role" value="ADMIN" />
+        <button type="submit" class="submit-btn">Login</button>
+      </form>
+
+      <p id="loadingText" style="display: none; color: green">
+        🔄 Logging in, please wait...
+      </p>
     </div>
-
-    <div class="form-group">
-      <label for="password">Password:</label>
-      <input type="password" id="password" name="password" placeholder="Password" required>
-    </div>
-
-    <button type="submit" class="submit-btn">Login</button>
-  </form>
-  <p id="loadingText" style="display: none; color: green;">🔄 Logging in, please wait...</p>
-</div>
 
 <script>
-document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const admin_id = document.getElementById('admin_id').value;
-  const password = document.getElementById('password').value;
-  loadingText.style.display = 'block';
+  const form = document.getElementById("adminLoginForm");
+  const loadingText = document.getElementById("loadingText");
+  const otpSection = document.getElementById("otpSection");
 
-  fetch('http://localhost:3000/admin/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ admin_id, password })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.redirectTo) {
-      alert("✅ Login successful!");
-      window.location.href = data.redirectTo;
-    } else {
-      alert("❌ " + (data.message || "Login failed"));
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    loadingText.style.display = "block";
+
+    try {
+      const response = await fetch("http://localhost:3000/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      loadingText.style.display = "none";
+
+      if (result.step === "otp_sent") {
+        alert("📲 OTP sent to your phone. Please enter it below.");
+        otpSection.style.display = "block"; // Show OTP input
+      } else if (result.redirectTo) {
+        alert("✅ Login successful!");
+        window.location.href = '/admin/dashboard'; // e.g., '/admin_dashboard.html'
+      } else {
+        alert("❌ " + (result.message || "Login failed"));
+      }
+    } catch (err) {
+      console.error("💥 Error:", err);
+      alert("❌ Login error occurred.");
+      loadingText.style.display = "none";
     }
-  })
-  .catch(err => {
-    console.error("💥 Error:", err);
-    alert("❌ Login error occurred.");
   });
-});
-  </script>
-</body>
+</script>
+  </body>
 </html>
