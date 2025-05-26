@@ -1,30 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Access - Online Voting System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      height: 100vh;
+      background: linear-gradient(to top, #f7f8da, #fafa55, #f7f8da);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+    }
+
+    .box {
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      background-color: white;
+    }
+
+    a {
+      text-decoration: none;
+      font-weight: bold;
+      color: #555;
+      background: #f0c808;
+      padding: 10px 20px;
+      border-radius: 8px;
+      transition: 0.3s;
+    }
+
+    a:hover {
+      background: #d4ad0b;
+      color: white;
+    }
+  </style>
 </head>
-<style>
-    body{
-        font-family: Arial, sans-serif;
-        text-align: center;
-        height: 100vh;
-        background: linear-gradient(to top, #f7f8da, #fafa55, #f7f8da);
-    }
-    div{
-        padding-top: 15%;
-    }
-
-    a:hover{
-        color:#0c0c07;
-    }
-
-</style>
-<body text="grey">
-    <div>
-    
-    <h1>Hey Admin<br>If you already registered, then <a href="v_login.html">LOGIN</a> <br>if not then <a href="admin_register.html"> SIGNIN</a></h1>
-</div>
+<body>
+  <div class="box">
+    <h1>Welcome Admin!</h1>
+    <p>Only registered admins can login.</p>
+    <a href="a_login.html"> Login Now</a>
+  </div>
 </body>
 </html>
