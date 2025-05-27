@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Poll Result Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f8f9fa; }
+        h2 { margin-top: 20px; }
+        #pollChartContainer { width: 80%; height: 500px; margin: auto; }
+        #pollChart { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <h2>Current Poll Result</h2>
+    <div id="pollChartContainer">
+        <canvas id="pollChart"></canvas>
+    </div>
+
+    <script>
+        async function loadChart() {
+            const response = await fetch('/get_poll_result');
+            const data = await response.json();
+
+            const labels = data.map(item => item.party_name);
+            const votes = data.map(item => item.votes);
+
+            const ctx = document.getElementById('pollChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '', // No label for cleaner look
+                        data: votes,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(153, 102, 255, 0.6)',
+                            'rgba(255, 159, 64, 0.6)'
+                        ],
+                        borderWidth: 0 // No borders for clean look
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            ticks: { display: false }, // No numbering on y-axis
+                            grid: { display: false } // No gridlines
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        loadChart();
+    </script>
+</body>
+</html>
