@@ -84,44 +84,72 @@
         <button class="submit-btn" type="submit">Create Poll</button>
       </form>
     </div>
+
 <script>
-  // ✅ Load the current poll question and options
-  function createPoll(event) {
-    event.preventDefault();
-    const question = document.getElementById('question').value;
-    fetch('/create_poll', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ question })
-    })
-    .then(res => res.json())
-    .then(data => alert('✅ ' + data.message))
-    .catch(err => alert('⚠️ Error: ' + err));
+  function addCandidateEntry() {
+    const container = document.getElementById("candidatesContainer");
+    const newEntry = document.createElement("div");
+    newEntry.classList.add("candidate-entry");
+    newEntry.innerHTML = `
+      <div class="form-group">
+        <label>Candidate Name:</label>
+        <input type="text" name="candidateName[]" placeholder="Candidate Name" required /> 
+      </div>
+      <div class="form-group">
+        <label>Candidate Symbol:</label>
+        <input type="text" name="candidateSymbol[]" placeholder="Candidate Symbol" required />
+      </div>
+    `;
+    container.appendChild(newEntry);
   }
-  // ✅ Function to handle vote submission
-  function submitVote() {
-    const selected = document.querySelector('input[name="candidate"]:checked');
-    if (!selected) {
-      alert("⚠️ Please select a candidate!");
+
+  document.getElementById("createPollWithCandidatesForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const question = document.getElementById("question").value.trim();
+    const expires_at = document.getElementById("expires_at").value || null;
+    const created_by = "admin"; // Hardcoded, replace later with session/user info.
+
+    const candidateNames = Array.from(document.getElementsByName("candidateName[]")).map(input => input.value.trim());
+    const candidateSymbols = Array.from(document.getElementsByName("candidateSymbol[]")).map(input => input.value.trim());
+
+    if (!question || candidateNames.some(name => !name) || candidateSymbols.some(symbol => !symbol)) {
+      alert("⚠️ Please fill in all poll and candidate fields.");
       return;
     }
 
-    fetch("/submit_vote", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ choice: selected.value }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        alert("✅ " + data.message);
-        // Optional: Reload page or show updated result
-        // location.reload();
-      })
-      .catch((err) => {
-        console.error(err);
-        alert("🚨 Error submitting vote. Please try again.");
+    const candidates = candidateNames.map((name, i) => ({ name, symbol: candidateSymbols[i] }));
+
+    try {
+      const response = await fetch("/admin/create_poll_with_candidates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, expires_at, created_by, candidates })
       });
-  }
+
+      const data = await response.json();
+      if (response.ok) {
+        alert("✅ " + data.message);
+        this.reset();
+        document.getElementById("candidatesContainer").innerHTML = `
+          <div class="candidate-entry">
+            <div class="form-group">
+              <label>Candidate Name:</label>
+              <input type="text" name="candidateName[]" placeholder="Candidate Name" required /> 
+            </div>
+            <div class="form-group">
+              <label>Candidate Symbol:</label>
+              <input type="text" name="candidateSymbol[]" placeholder="Candidate Symbol" required />
+            </div>
+          </div>
+        `;
+      } else {
+        alert("⚠️ " + data.message);
+      }
+    } catch (error) {
+      alert("⚠️ Error creating poll: " + error.message);
+    }
+  });
 </script>
   </body>
 </html>
