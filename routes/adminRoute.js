@@ -97,4 +97,32 @@ router.post("/create_poll_with_candidates", async (req, res) => {
   }
 });
 
+router.get('/get_poll_result', async (req, res) => {
+  try {
+    // 🌟 Active poll ka ID fetch karo
+    const [activePoll] = await db.query("SELECT id FROM polls WHERE is_active = 1 LIMIT 1");
+
+    if (activePoll.length === 0) {
+      return res.status(404).json({ message: "No active poll found." });
+    }
+
+    const pollId = activePoll[0].id;
+
+    // 🔥 Fetch vote count for each party in this poll
+    const [result] = await db.query(`
+      SELECT p.party_name, p.party_symbol, COUNT(v.id) as votes
+      FROM parties p
+      LEFT JOIN votes v ON p.id = v.party_id
+      WHERE p.poll_id = ?
+      GROUP BY p.id, p.party_name, p.party_symbol
+    `, [pollId]);
+
+    res.status(200).json(result);
+
+  } catch (error) {
+    console.error("🔥 Error fetching poll result:", error);
+    res.status(500).json({ message: "Failed to fetch poll result.", error: error.message });
+  }
+});
+
 export default router;
