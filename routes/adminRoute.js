@@ -56,23 +56,30 @@ router.post("/login", async (req, res) => {
 // 🔐 CREATE POLL (with options)
 router.post("/create_poll_with_candidates", async (req, res) => {
   const { question, expires_at, created_by, candidates } = req.body;
+  console.log("Received data:", req.body); // 👀 Log incoming data
 
   if (!question || !created_by || !Array.isArray(candidates) || candidates.length === 0) {
     return res.status(400).json({ message: "Missing required fields." });
   }
 
   try {
-    // Insert poll first
+    // 👑 Step 1️⃣ Purane poll ko deactivate karo
+    await db.query("UPDATE polls SET is_active = 0 WHERE is_active = 1");
+    console.log("Old active poll deactivated.");
+
+    // 👑 Step 2️⃣ Naya poll create karo (with active status)
     const [pollResult] = await db.query(
-      "INSERT INTO polls (question, expires_at, created_by) VALUES (?, ?, ?)",
+      "INSERT INTO polls (question, expires_at, created_by, is_active) VALUES (?, ?, ?, 1)",
       [question, expires_at, created_by]
     );
     const pollId = pollResult.insertId;
+    console.log("Poll created with ID:", pollId);
 
-    // Insert each candidate with poll reference
+    // 👑 Step 3️⃣ Candidates insert karo
     for (const candidate of candidates) {
       const { name, symbol } = candidate;
       if (!name || !symbol) {
+        console.warn("Skipping invalid candidate:", candidate);
         continue;
       }
       const party_id = "P" + Math.floor(1000 + Math.random() * 9000);
@@ -80,11 +87,12 @@ router.post("/create_poll_with_candidates", async (req, res) => {
         "INSERT INTO parties (party_name, party_symbol, party_id, poll_id) VALUES (?, ?, ?, ?)",
         [name, symbol, party_id, pollId]
       );
+      console.log(`Candidate inserted: ${name}, Symbol: ${symbol}`);
     }
 
     res.status(200).json({ message: "Poll with candidates created successfully." });
   } catch (error) {
-    console.error("Error creating poll with candidates:", error);
+    console.error("🔥 Error creating poll with candidates:", error); // 👀 Log detailed error
     res.status(500).json({ message: "Failed to create poll with candidates.", error: error.message });
   }
 });
