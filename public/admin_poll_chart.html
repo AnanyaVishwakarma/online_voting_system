@@ -7,7 +7,7 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; background-color: #f8f9fa; }
         h2 { margin-top: 20px; }
-        #pollChartContainer { width: 80%; height: 500px; margin: auto; }
+        #pollChartContainer { width: 80%; height: 500px; margin: 10%; }
         #pollChart { width: 100%; height: 100%; }
     </style>
 </head>
@@ -18,6 +18,8 @@
     </div>
 
     <script>
+        let pollChartInstance = null; // 👑 Chart ka instance global bana do
+
         async function loadChart() {
             const response = await fetch('/get_poll_result');
             const data = await response.json();
@@ -26,7 +28,14 @@
             const votes = data.map(item => item.votes);
 
             const ctx = document.getElementById('pollChart').getContext('2d');
-            new Chart(ctx, {
+
+            // 🔥 Purana chart destroy karo agar hai
+            if (pollChartInstance) {
+                pollChartInstance.destroy();
+            }
+
+            // 🌸 Naya chart create karo with fresh data
+            pollChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
@@ -41,7 +50,7 @@
                             'rgba(153, 102, 255, 0.6)',
                             'rgba(255, 159, 64, 0.6)'
                         ],
-                        borderWidth: 0 // No borders for clean look
+                        borderWidth: 0
                     }]
                 },
                 options: {
@@ -50,8 +59,8 @@
                     },
                     scales: {
                         y: {
-                            ticks: { display: false }, // No numbering on y-axis
-                            grid: { display: false } // No gridlines
+                            ticks: { display: false },
+                            grid: { display: false }
                         },
                         x: {
                             grid: { display: false }
